@@ -1,0 +1,63 @@
+.container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.card {
+    background-color: var( --surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-h);
+}
+
+.primary-btn {
+    background-color: var(--text-h);
+    color: var(--bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.primary-btn:hover {
+    background-color: #919191;
+}
+
+.navbar {
+    display: flex;
+    height: 50px;
+    width: 98%;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    align-items: center;
+}
+
+.app-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-h);
+    margin-left: 20px;
+}

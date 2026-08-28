@@ -1,0 +1,13 @@
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.welcome-text {
+    font-size: 2.5cqi;
+    line-height: 1.2;
+    margin-bottom: 30px;
+}

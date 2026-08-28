@@ -1,0 +1,126 @@
+.list-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 1200px;
+    width: 98vw;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+}
+
+.task-list-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--text-h);
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    align-items: center;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    width:90vw;
+    max-width: 1000px;
+    font-size: 20px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: grab;
+    transition: background-color 0.3s ease;
+}
+
+.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.task-item:hover {
+    background-color: var(--accent-bg);
+}
+
+.pill {
+    border-radius: 5px;
+    padding: 0 10px;
+    font-size: 14px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.list-item-text {
+    width: 80%;
+    word-wrap: break-word;
+    transition: opacity 0.3s ease;
+}
+
+.close-btn {
+    cursor: pointer;
+    height: 30px;
+    margin-left: auto;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: var(--alert);
+}
+
+.add-task-box {
+    display: flex;
+    width: 90vw;
+    max-width: 1000px;
+    padding: 10px 20px;
+}
+
+.filter-btn {
+    background-color: var(--bg);
+    color: var(--text-h);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+    transition: background-color 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: var(--text-h);
+    color: var(--bg);
+}
+
+.filter-menu {
+    position: absolute;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 1;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    user-select: none;
+}
+
+.filter-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.filter-item:hover {
+    background-color: var(--accent-bg);
+}
