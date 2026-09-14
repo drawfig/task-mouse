@@ -2,13 +2,44 @@ import './Tasks.css';
 import {useEffect, useRef, useState} from "react";
 import CheckBox from "../CheckBox/CheckBox.jsx";
 import Modal from "../Modal/Modal.jsx";
+import {send_request} from "colby-jack";
+import {useNavigate} from "react-router";
 
-function Tasks() {
+function Tasks({userLoading, logoutSig}) {
+    const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [addTask, setAddTask] = useState(false);
 
     const [activeTasks, setActiveTasks] = useState([]);
     const [completedTasks, setCompletedTasks] = useState([]);
+
+    useEffect(() => {
+        if(logoutSig) {
+            navigate("/");
+        }
+    }, [logoutSig])
+
+    useEffect(() => {
+        async function getTasks() {
+            let resp = await send_request("/api/get_tasks", {}, true);
+            if(resp.status && resp.status === "success") {
+                let tasks = resp.data;
+                let active = tasks.filter((task) => task.status === "active");
+                active.sort((a, b) => a.rank - b.rank);
+                let completed = tasks.filter((task) => task.status === "completed");
+                completed.sort((a, b) => a.rank - b.rank);
+                setActiveTasks(active);
+                setCompletedTasks(completed);
+            }
+            else {
+                console.log(resp.data);
+            }
+        }
+
+        if(!userLoading) {
+            getTasks();
+        }
+    }, [userLoading]);
 
     useEffect(() => {
         function handleKeyDown(e) {
@@ -24,13 +55,20 @@ function Tasks() {
         };
     }, [addTask, modalOpen]);
 
-    function handleCheck(status, id) {
+    async function handleCheck(status, id) {
+        let data;
         if(status) {
             let task = activeTasks.find((task) => task.id === id);
             task.status = "completed";
             task.rank = completedTasks.length + 1;
             setActiveTasks(activeTasks.filter((task) => task.id !== id));
             setCompletedTasks([...completedTasks, task]);
+
+            data = {
+                task_id: id,
+                status: "completed",
+                rank: task.rank,
+            };
         }
         else {
             let task = completedTasks.find((task) => task.id === id);
@@ -38,10 +76,21 @@ function Tasks() {
             task.rank = activeTasks.length + 1;
             setCompletedTasks(completedTasks.filter((task) => task.id !== id));
             setActiveTasks([...activeTasks, task]);
+
+            data = {
+                task_id: id,
+                status: "active",
+                rank: task.rank,
+            };
+        }
+
+        let resp = await send_request("/api/update_status", data, true);
+        if(!resp.status && resp.status === "error") {
+            console.log(resp.data);
         }
     }
 
-    function handleDelete(status, id) {
+    async function handleDelete(status, id) {
         if(status === "active") {
             setActiveTasks(activeTasks.filter((task) => task.id !== id));
         }
@@ -49,9 +98,14 @@ function Tasks() {
             setCompletedTasks(completedTasks.filter((task) => task.id !== id));
         }
         setModalOpen(false);
+
+        let resp = await send_request("/api/delete_task", {task_id: id}, true);
+        if(!resp.status && resp.status === "error") {
+            console.log(resp.data);
+        }
     }
 
-    function handleAddTask(priority, taskName) {
+    async function handleAddTask(priority, taskName) {
         let newTask = {
             id: activeTasks.length + completedTasks.length + 1,
             rank: activeTasks.length + 1,
@@ -60,8 +114,29 @@ function Tasks() {
             priority: priority,
             date: Date.now(),
         };
+        const oldTasks = activeTasks;
         setActiveTasks([...activeTasks, newTask]);
         setAddTask(false);
+
+        const data = {
+            title: taskName,
+            priority: priority,
+            rank: oldTasks.length + 1,
+        };
+
+        let resp = await send_request("/api/create_task", data, true);
+        if(resp.status && resp.status === "success") {
+            newTask.id = resp.data.id;
+            setActiveTasks([...oldTasks, newTask]);
+        }
+        if(!resp.status && resp.status === "error") {
+            setActiveTasks(oldTasks);
+            console.log(resp.data);
+        }
+    }
+
+    async function handleLogout() {
+        await send_request("/api/logout", {}, true);
     }
 
     return(
@@ -84,7 +159,8 @@ function Tasks() {
             ></Modal>
             <div className="container">
                 <div className="navbar">
-                    <div className="app-name">Task Mouse 🐭</div>
+                    <div className="app-name" style={{cursor:"pointer"}} onClick={() => navigate("/")}>Task Mouse 🐭</div>
+                    <button className="logout-btn" style={{fontSize:15, marginLeft:"auto", marginRight:20}} onClick={handleLogout}>Logout</button>
                 </div>
                 <div className="list-container" style={{cursor: "pointer"}} onClick={() => setAddTask(true)}>
                     <div className="card">
@@ -220,6 +296,17 @@ function ListContainer({title, list, setList, checkHandler, setModalOpen}) {
         }
 
         setList(_list);
+
+        let data = {};
+        _list.forEach((task) => {
+            data[task.id] = task.rank;
+        });
+
+        let resp = send_request("/api/update_ranks", {tasks: data}, true);
+
+        if(!resp.status && resp.status === "error") {
+            console.log(resp.data);
+        }
     }
 
     function handleDragStart(index) {
@@ -239,6 +326,16 @@ function ListContainer({title, list, setList, checkHandler, setModalOpen}) {
         dragItemIndex.current = null;
         setList(_list);
         setIsDragging(false);
+
+        let data = {};
+        _list.forEach((task) => {
+            data[task.id] = task.rank;
+        });
+
+        let resp = send_request("/api/update_ranks", {tasks: data}, true);
+        if(!resp.status && resp.status === "error") {
+            console.log(resp.data);
+        }
     }
 
     list.sort((a, b) => a.rank - b.rank);

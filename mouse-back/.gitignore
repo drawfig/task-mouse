@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.db
+!mouse_template.db
+node_modules
+dist
+dist-ssr
+*.local
+
+patchnotes.md
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.env.*
+*.phar
+.squeak_history
+vendor/
+!squeak_util/*
+.squeak_util_dep
+dist/
+.dist_archive/
+.deploy.env

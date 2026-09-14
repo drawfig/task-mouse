@@ -1,0 +1,47 @@
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.line-combine {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 95%;
+}
+
+.visibility-toggle {
+    height: 20px;
+    cursor: pointer;
+    color: #bbb;
+    transition: color 0.3s ease;
+}
+
+.visibility-toggle:hover {
+    color: #fff;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    animation: spin 1s linear infinite;
+}
+
+.loading {
+    background-color: var(--secondary);
+    cursor: default;
+    color: var(--text-h);
+}
+
+.loading:hover {
+    background-color: var(--secondary);
+}

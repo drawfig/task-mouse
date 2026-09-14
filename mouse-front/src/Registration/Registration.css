@@ -1,0 +1,52 @@
+.registration-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.visibility-toggle {
+    height: 20px;
+    cursor: pointer;
+    color: #bbb;
+    transition: color 0.3s ease;
+}
+
+.visibility-toggle:hover {
+    color: #fff;
+}
+
+.line-combine {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 93%;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    animation: spin 1s linear infinite;
+}
+
+.loading {
+    background-color: var(--secondary);
+    cursor: default;
+}
+
+.loading:hover {
+    background-color: var(--secondary);
+}
+
+.success-message {
+    color: var(--success);
+    width: 70%;
+    text-align: center;
+    margin-bottom: 10px;
+}

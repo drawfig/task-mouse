@@ -67,7 +67,7 @@ function AddTaskModal({setOpen, handler, title}) {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [priority, taskName]);
 
-    function handleSubmit() {
+    async function handleSubmit() {
         if(taskName.length > max) {
             setError(1);
             return;
@@ -81,7 +81,7 @@ function AddTaskModal({setOpen, handler, title}) {
             return;
         }
 
-        handler(priority.toLowerCase(), taskName);
+        await handler(priority.toLowerCase(), taskName);
     }
 
     function errorDisplay() {

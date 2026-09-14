@@ -1,0 +1,12 @@
+<?php
+namespace middleware;
+
+class Middleware_Route_Groups {
+    public $GROUPS = [
+        {{GROUPS}}
+    ];
+
+    public $GLOBAL_BYPASS_ROUTES = [
+        {{GLOBAL_BYPASS_ROUTES}}
+    ];
+}

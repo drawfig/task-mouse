@@ -1,0 +1,12 @@
+<?php
+namespace middleware;
+
+class Middleware_Module_Groups {
+    public $GLOBAL_MIDDLEWARE = [
+        {{GLOBAL_MIDDLEWARE}}
+    ];
+
+    public $GROUP_MIDDLEWARE = [
+        {{GROUP_MIDDLEWARE}}
+    ];
+}

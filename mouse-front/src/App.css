@@ -161,3 +161,17 @@
     max-width: 600px;
 }
 
+.logout-btn {
+    background-color: transparent;
+    color: var(--text-h);
+    border: 1px solid var(--text);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #e1e1e1;
+    color: var(--bg);
+}

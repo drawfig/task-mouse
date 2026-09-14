@@ -1,0 +1,166 @@
+<?php
+namespace controllers;
+
+class User_Controller {
+    private $REQUEST_DATA;
+    private $DB;
+    private $RESP;
+
+    public function __construct($db, $sqlite, $request_data) {
+        $this->REQUEST_DATA = $request_data;
+        $this->DB = $db;
+        if($db !== 1) {
+            $this->RESP = new \utils\Response_Handler();
+        }
+    }
+
+    public function create_user() {
+        $user_data = $this->REQUEST_DATA["data"];
+        $model = new \models\User_Model();
+
+        $check = $model->get_user_by_name($user_data["username"], $this->DB);
+
+        if($check && sizeof($check) > 0) {
+            $this->RESP->send(["response" => "User Already Exists."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+        }
+        else {
+            $success = $model->create_user($user_data, $this->DB);
+
+            if ($success) {
+                $this->RESP->send(["response" => "User created successfully."], "Generic", $this->REQUEST_DATA['request_tag'], false);
+            } else {
+                $this->RESP->send(["response" => "Error creating user."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+            }
+        }
+    }
+
+    public function login_user() {
+        $data = $this->REQUEST_DATA["data"];
+        $model = new \models\User_Model();
+
+        $user_data = $model->get_user_by_name($data["username"], $this->DB);
+
+        if($user_data && sizeof($user_data) > 0) {
+            $user_data = $user_data[0];
+            $pass_chk = $this->pass_hash_chk($user_data["hash"], $data["password"], $user_data["salt"]);
+        }
+        else {
+            $this->RESP->send(["response" => "User not found."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+        }
+
+        if($pass_chk) {
+            $token = $model->create_session($user_data["id"], $this->DB);
+            $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
+            $kli_token = $model->create_kli($user_data["id"], $this->DB);
+            $this->send_response_with_kli($kli_token);
+
+            $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
+        }
+        else{
+            $this->RESP->send(["response" => "Invalid username or password."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+        }
+
+    }
+
+    private function send_response_with_kli($token) {
+        $cookie_options = [
+            "expires" => time() + (86400 * 30),
+            "path" => "/",
+            "secure" => false,
+            "httponly" => true,
+            "samesite" => "Lax"
+        ];
+        setcookie("kli", $token, $cookie_options);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+
+    private function pass_hash_chk($hash, $pass, $salt) {
+        $hash_gen = new \utils\Hash_Gen();
+
+        $hash_chk = $hash_gen->hash($pass, $salt);
+
+        return $hash_chk == $hash;
+    }
+
+    public function refresh_session() {
+        $user_id = $this->REQUEST_DATA['user_id'];
+        $model = new \models\User_Model();
+        $kli_token = $_COOKIE["kli"];
+        if($kli_token) {
+            $kli_data = $model->get_kli($kli_token, $this->DB);
+            if($kli_data && $kli_data['user_id'] == $user_id) {
+                $session_token = $this->session_management($user_id);
+
+                $this->RESP->send(["token" => $session_token], "Generic", $this->REQUEST_DATA['request_tag'], false);
+            }
+            else {
+                $this->RESP->send(["code" => "401", "api_message" => "Access Denied"], "Generic", $this->REQUEST_DATA["request_tag"], false, false);
+                http_response_code(401);
+            }
+        }
+        else {
+            $this->RESP->send(["code" => "401", "api_message" => "Access Denied"], "Generic", $this->REQUEST_DATA["request_tag"], false, false);
+            http_response_code(401);
+        }
+    }
+
+    private function session_management($user_id) {
+        $model = new \models\User_Model();
+        $session_token = $model->get_session_token($user_id, $this->DB);
+
+        if($session_token && sizeof($session_token) > 0 && (int) round(microtime(true) * 1000) >= $session_token['exp']) {
+            return $model->create_session($user_id, $this->DB);
+        }
+        return $session_token['token'];
+    }
+
+    public function kli_handshake() {
+        $handshake_token = $_COOKIE["kli"];
+        $model = new \models\User_Model();
+
+        $kil_data = $model->get_kli($handshake_token, $this->DB);
+        if($kil_data) {
+            $user_data = $model->get_user_by_id($kil_data['user_id'], $this->DB);
+            if($user_data && sizeof($user_data) > 0) {
+                $user_data = $user_data[0];
+                $token = $this->session_management($user_data["id"]);
+                $data = ["user_id" => $user_data["id"], "username" => $user_data["username"], "token" => $token, "join_date" => $user_data["join_date"]];
+                if(($kil_data['exp'] +  10000) < (int) round(microtime(true) * 1000)) {
+                    $kli_token = $model->create_kli($user_data["id"], $this->DB);
+                    $this->send_response_with_kli($kli_token);
+                }
+
+                $this->RESP->send($data, "Login", $this->REQUEST_DATA['request_tag'], false);
+            }
+            else {
+                $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+            }
+        }
+        else {
+            $this->RESP->send(["response" => "Invalid handshake token."], "Generic", $this->REQUEST_DATA['request_tag'], false, false);
+        }
+
+    }
+
+    public function logout_user() {
+        $model = new \models\User_Model();
+        $user_id = $this->REQUEST_DATA['user_id'];
+
+        $model->clear_session($user_id, $this->DB);
+        $model->clear_kli($user_id, $this->DB);
+
+        $options = [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'httponly' => true,
+            'secure'   => true,
+            'samesite' => 'Lax'
+        ];
+
+        setcookie("kli", "", $options);
+        header('Content-Type: application/json');
+
+        $this->RESP->send(["response" => "Logged out successfully."], "Logout", $this->REQUEST_DATA['request_tag'], false);
+    }
+
+}

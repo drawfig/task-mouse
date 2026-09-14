@@ -2,8 +2,8 @@ import './CheckBox.css'
 
 function CheckBox({status = false, handler, id}) {
 
-    function handleClick() {
-        handler(!status, id);
+    async function handleClick() {
+        await handler(!status, id);
     }
 
     function displayCheck() {
